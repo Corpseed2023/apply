@@ -5,6 +5,7 @@ import com.apply.entity.UserCredential;
 import com.apply.repository.UserCredentialRepository;
 import com.apply.serviceImpl.AutomationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -14,8 +15,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class JobScheduler {
 
-    private final UserCredentialRepository userCredentialRepository;
-    private final AutomationService automationService;
+    @Autowired
+    private  UserCredentialRepository userCredentialRepository;
+    @Autowired
+    private  AutomationService automationService;
 
     @Scheduled(cron = "0 0 9 * * ?")
     public void automateJobApplications() {

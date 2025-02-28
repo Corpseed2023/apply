@@ -12,6 +12,7 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -24,9 +25,14 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AutomationService {
 
-    private final UserCredentialRepository userCredentialRepository;
-    private final ApplicationHistoryRepository applicationHistoryRepository;
-    private final QuestionRepository questionRepository;
+    @Autowired
+    private  UserCredentialRepository userCredentialRepository;
+
+    @Autowired
+    private  ApplicationHistoryRepository applicationHistoryRepository;
+
+    @Autowired
+    private  QuestionRepository questionRepository;
 
     public String applyFor(String platform, String jobTitle) {
         Optional<UserCredential> credentialsOpt = userCredentialRepository.findByPlatform(platform);
