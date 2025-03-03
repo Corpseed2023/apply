@@ -121,7 +121,7 @@ public class AutomationService {
     }
 
     private void uploadResume(WebDriver driver, WebDriverWait wait) {
-        File resumeFile = new File("D:/resumes/my_resume.pdf");
+        File resumeFile = new File("D:/kaushal.pdf");
         WebElement uploadButton = driver.findElement(By.xpath("//input[@type='file']"));
         uploadButton.sendKeys(resumeFile.getAbsolutePath());
         wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[contains(text(),'Submit')]"))).click();
