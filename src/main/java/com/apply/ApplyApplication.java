@@ -7,8 +7,10 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+
 import java.time.Duration;
 import java.util.List;
+import java.util.Set;
 
 @SpringBootApplication
 public class ApplyApplication {
@@ -47,15 +49,9 @@ public class ApplyApplication {
 			}
 
 			// 2️⃣ Locate & Click Login Button
-			try {
-				WebElement loginButton = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//a[contains(@href, 'login') or contains(text(),'Login')]")));
-				loginButton.click();
-				System.out.println("✅ Clicked on Login button.");
-			} catch (Exception e) {
-				System.err.println("❌ Login button not found! Retrying with alternative method...");
-				WebElement loginAlt = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//a[contains(text(),'Login')]")));
-				loginAlt.click();
-			}
+			WebElement loginButton = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//a[contains(@href, 'login') or contains(text(),'Login')]")));
+			loginButton.click();
+			System.out.println("✅ Clicked on Login button.");
 
 			// 3️⃣ Wait for Login Modal
 			WebElement loginModal = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[contains(@class, 'login-layer')]")));
@@ -91,25 +87,10 @@ public class ApplyApplication {
 			wait.until(ExpectedConditions.jsReturnsValue("return document.readyState === 'complete';"));
 			System.out.println("✅ Page fully loaded after login.");
 
-			// 8️⃣ **Find Search Box & Ensure Clickability**
+			// 8️⃣ **Find Search Box & Enter Search Term**
 			WebElement searchBox = wait.until(ExpectedConditions.presenceOfElementLocated(
 					By.xpath("//input[contains(@class, 'suggestor-input') and contains(@placeholder, 'Enter keyword')]")
 			));
-			System.out.println("✅ Found search box.");
-
-			// 9️⃣ **Ensure No Overlapping Elements**
-			((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", searchBox);
-			((JavascriptExecutor) driver).executeScript("arguments[0].style.display='block';", searchBox);
-
-			//  🔟 **Click Using JavaScript if Intercepted**
-			try {
-				searchBox.click();
-			} catch (ElementClickInterceptedException e) {
-				System.err.println("⚠ Click intercepted! Using JavaScript click.");
-				((JavascriptExecutor) driver).executeScript("arguments[0].click();", searchBox);
-			}
-
-			// **Enter Search Term**
 			searchBox.sendKeys("Java Developer");
 			System.out.println("✅ Entered search term: Java Developer");
 
@@ -122,47 +103,70 @@ public class ApplyApplication {
 
 			// 11️⃣ **Ensure Job Listings Load**
 			Thread.sleep(5000);  // Allow jobs to load
-			((JavascriptExecutor) driver).executeScript("window.scrollTo(0, document.body.scrollHeight);"); // Scroll to bottom
-			System.out.println("📜 Scrolled down to load more jobs.");
+			System.out.println("📜 Job listings loaded.");
 
-			// 12️⃣ **Find "Apply" Buttons with Different XPath Variants**
-			String[] applyXPaths = {
-					"//button[contains(text(),'Apply')]",  // Common pattern
-					"//a[contains(@href, 'apply')]",  // Some job boards use links instead of buttons
-					"//div[contains(@class, 'jobTuple')]//button",  // Naukri-specific structure
-					"//span[contains(text(),'Apply')]/ancestor::button" // Look for span inside buttons
-			};
+			// 12️⃣ **Click on Job Cards and Apply**
+			List<WebElement> jobCards = driver.findElements(By.xpath("//a[contains(@class, 'title')]"));
 
-			WebElement applyButton = null;
-			for (String xpath : applyXPaths) {
-				try {
-					applyButton = wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath(xpath)));
-					System.out.println("✅ Found 'Apply' button with XPath: " + xpath);
-					break;
-				} catch (Exception ignored) {
-					System.err.println("⚠ No 'Apply' button found using: " + xpath);
+			int applyLimit = 5;
+			int appliedCount = 0;
+			String originalWindow = driver.getWindowHandle();
+			Set<String> oldWindows = driver.getWindowHandles();
+
+			for (WebElement jobCard : jobCards) {
+				if (appliedCount >= applyLimit) break;
+
+				// Get job name
+				String jobTitle = jobCard.getText().trim();
+				System.out.println("🔍 Found Job: " + jobTitle);
+
+				// Click the job card
+				((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", jobCard);
+				((JavascriptExecutor) driver).executeScript("arguments[0].click();", jobCard);
+				System.out.println("✅ Clicked on job: " + jobTitle);
+
+				// Wait for 6 seconds before applying
+				Thread.sleep(10000);
+				System.out.println("⏳ Waiting 6 seconds before applying to: " + jobTitle);
+
+				// Wait for new tab and switch to it
+				Set<String> newWindows = driver.getWindowHandles();
+				newWindows.removeAll(oldWindows);
+				if (!newWindows.isEmpty()) {
+					String newTab = newWindows.iterator().next();
+					driver.switchTo().window(newTab);
+					System.out.println("🔄 Switched to job details page: " + jobTitle);
+				} else {
+					System.err.println("❌ New tab did not open for job: " + jobTitle);
+					continue;
 				}
-			}
 
-			// 13️⃣ **If No Apply Buttons Found, Print Page Source for Debugging**
-			if (applyButton == null) {
-				System.err.println("❌ 'Apply' button NOT found! Printing page source for debugging...");
-				System.out.println(driver.getPageSource());
-				driver.quit();
-				return;
-			}
+				// Wait for Job Details Page to Load
+				wait.until(ExpectedConditions.jsReturnsValue("return document.readyState === 'complete';"));
+				System.out.println("✅ Job details page loaded: " + jobTitle);
 
-			// 14️⃣ **Apply to Jobs (Limit 5)**
-			List<WebElement> applyButtons = driver.findElements(By.xpath("//button[contains(text(),'Apply')]"));
-			int count = 0;
-			for (WebElement button : applyButtons) {
-				if (count >= 5) break;
-				((JavascriptExecutor) driver).executeScript("arguments[0].click();", button);
-				count++;
+				// Click the Apply button
+				try {
+					WebElement applyButton = wait.until(ExpectedConditions.elementToBeClickable(
+							By.xpath("//button[contains(text(),'Apply')]")
+					));
+					((JavascriptExecutor) driver).executeScript("arguments[0].click();", applyButton);
+					System.out.println("✅ Applied to: " + jobTitle);
+					appliedCount++;
+				} catch (Exception e) {
+					System.err.println("❌ Apply button not found for: " + jobTitle);
+				}
+
+				// Close the job details tab & switch back
+				driver.close();
+				driver.switchTo().window(originalWindow);
+				System.out.println("🔄 Switched back to job listings page.");
+
+				// Small delay before next job
 				Thread.sleep(2000);
 			}
 
-			System.out.println("✅ Successfully applied for " + count + " Java Developer jobs on Naukri.com.");
+			System.out.println("🎯 Successfully applied for " + appliedCount + " jobs.");
 
 		} catch (Exception e) {
 			System.err.println("🚨 Error during job application: " + e.getMessage());
