@@ -26,7 +26,7 @@ public class JobScheduler {
 
         for (UserCredential user : users) {
             for (String jobTitle : user.getJobTitles()) {
-                automationService.applyFor(user.getPlatform(), jobTitle);
+//                automationService.applyFor(user.getPlatform(), jobTitle);
             }
         }
     }

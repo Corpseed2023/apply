@@ -14,11 +14,11 @@ public class AutomationController {
     @Autowired
     private AutomationService automationService;
 
-    @PostMapping("/apply")
-   public ResponseEntity<String> applyFor(@RequestParam String platform, @RequestParam String jobTitle) {
-        String result = automationService.applyFor(platform, jobTitle);
-        return ResponseEntity.ok(result);
-    }
+//    @PostMapping("/apply")
+//   public ResponseEntity<String> applyFor(@RequestParam String platform, @RequestParam String jobTitle) {
+////        String result = automationService.applyFor(platform, jobTitle);
+//        return ResponseEntity.ok(result);
+//    }
 
 
 }
