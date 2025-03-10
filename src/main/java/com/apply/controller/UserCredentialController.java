@@ -1,14 +1,19 @@
 package com.apply.controller;
 
 import com.apply.dto.request.UserCredentialRequest;
+import com.apply.entity.Platform;
 import com.apply.entity.UserCredential;
+import com.apply.repository.PlatformRepository;
 import com.apply.service.UserCredentialService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -18,13 +23,19 @@ import java.util.Optional;
 public class UserCredentialController {
 
     @Autowired
-    private  UserCredentialService userCredentialService;
+    private UserCredentialService userCredentialService;
+
+    @Autowired
+    private PlatformRepository platformRepository;
 
     // Save a new credential
     @PostMapping("/save")
     public ResponseEntity<UserCredential> saveCredential(@Valid @RequestBody UserCredentialRequest request) {
+        Platform platform = platformRepository.findByName(request.getPlatform())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Platform not found"));
+
         UserCredential userCredential = new UserCredential();
-        userCredential.setPlatform(request.getPlatform());
+        userCredential.setPlatform(platform);
         userCredential.setUsername(request.getUsername());
         userCredential.setPassword(request.getPassword());
 

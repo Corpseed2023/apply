@@ -25,9 +25,9 @@ public class JobScheduler {
         List<UserCredential> users = userCredentialRepository.findAll();
 
         for (UserCredential user : users) {
-            for (String jobTitle : user.getJobTitles()) {
-//                automationService.applyFor(user.getPlatform(), jobTitle);
-            }
+//            for (String jobTitle : user.getJobTitles()) {
+////                automationService.applyFor(user.getPlatform(), jobTitle);
+//            }
         }
     }
 }

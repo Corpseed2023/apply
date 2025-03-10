@@ -1,6 +1,5 @@
 package com.apply.entity;
 
-
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -16,14 +15,27 @@ public class Question {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String platform;
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-    @Column(nullable = false, unique = true)
+    @ManyToOne
+    @JoinColumn(name = "platform_id", nullable = false)
+    private Platform platform;
+
+    @Column(nullable = false)
     private String question;
 
-    @Column(nullable = false)
+    @Column(nullable = true) // Allowing it to be NULL initially
     private String answer;
+
+    // ✅ Added parameterized constructor that excludes ID
+    public Question(User user, Platform platform, String question, String answer) {
+        this.user = user;
+        this.platform = platform;
+        this.question = question;
+        this.answer = answer;
+    }
 
     public Long getId() {
         return id;
@@ -33,11 +45,19 @@ public class Question {
         this.id = id;
     }
 
-    public String getPlatform() {
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public Platform getPlatform() {
         return platform;
     }
 
-    public void setPlatform(String platform) {
+    public void setPlatform(Platform platform) {
         this.platform = platform;
     }
 

@@ -3,8 +3,6 @@ package com.apply.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.List;
-
 @Entity
 @Table(name = "user_credentials")
 @Getter
@@ -17,8 +15,13 @@ public class UserCredential {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
-    private String platform;
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "platform_id", nullable = false)
+    private Platform platform;
 
     @Column(nullable = false, unique = true)
     private String username;
@@ -26,13 +29,7 @@ public class UserCredential {
     @Column(nullable = false)
     private String password;
 
-    @ElementCollection
-    @CollectionTable(name = "user_job_titles", joinColumns = @JoinColumn(name = "user_id"))
-    @Column(name = "job_title")
-    private List<String> jobTitles;
-
     public Long getId() {
-
         return id;
     }
 
@@ -40,11 +37,19 @@ public class UserCredential {
         this.id = id;
     }
 
-    public String getPlatform() {
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public Platform getPlatform() {
         return platform;
     }
 
-    public void setPlatform(String platform) {
+    public void setPlatform(Platform platform) {
         this.platform = platform;
     }
 
@@ -62,13 +67,5 @@ public class UserCredential {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public List<String> getJobTitles() {
-        return jobTitles;
-    }
-
-    public void setJobTitles(List<String> jobTitles) {
-        this.jobTitles = jobTitles;
     }
 }
