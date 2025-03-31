@@ -195,18 +195,28 @@ public class Worked {
 
                 if (existingQuestion.isPresent()) {
                     Question question = existingQuestion.get();
-                    if (!question.getAnswer().isEmpty()) {
+                    if (question.getAnswer() != null && !question.getAnswer().isEmpty()) {
                         WebElement answerInput = wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//div[@contenteditable='true']")));
                         answerInput.sendKeys(question.getAnswer());
                         System.out.println("🤖 Answered: " + questionText);
                     }
                 } else {
-                    questionRepository.save(new Question(null, userCredential.getUser(), userCredential.getPlatform(), questionText, ""));
+                    // ✅ Fixed: Create Question object using no-arg constructor & set values manually
+                    Question newQuestion = new Question();
+                    newQuestion.setUser(userCredential.getUser());
+                    newQuestion.setPlatform(userCredential.getPlatform());
+                    newQuestion.setQuestion(questionText);
+                    newQuestion.setAnswer(""); // No answer initially
+
+                    questionRepository.save(newQuestion);
                     System.out.println("🤖 Saved new question: " + questionText);
                 }
             }
-        } catch (Exception ignored) {}
+        } catch (Exception e) {
+            System.err.println("⚠ Error handling chatbot questions: " + e.getMessage());
+        }
     }
+
 
     private String getPlatformUrl(String platform) {
         return switch (platform.toLowerCase()) {

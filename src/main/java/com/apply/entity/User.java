@@ -1,5 +1,6 @@
 package com.apply.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -24,13 +25,14 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ElementCollection(fetch = FetchType.EAGER)
+    private Set<String> keywords;
+
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<UserCredential> credentials;
 
-    @ElementCollection
-    @CollectionTable(name = "user_keywords", joinColumns = @JoinColumn(name = "user_id"))
-    @Column(name = "keyword")
-    private Set<String> keywords;  // Stores search keywords for the user
 
     public Long getId() {
         return id;

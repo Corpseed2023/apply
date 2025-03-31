@@ -29,13 +29,6 @@ public class Question {
     @Column(nullable = true) // Allowing it to be NULL initially
     private String answer;
 
-    // ✅ Added parameterized constructor that excludes ID
-    public Question(User user, Platform platform, String question, String answer) {
-        this.user = user;
-        this.platform = platform;
-        this.question = question;
-        this.answer = answer;
-    }
 
     public Long getId() {
         return id;

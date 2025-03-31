@@ -1,16 +1,10 @@
 package com.apply.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
-
 import java.util.List;
 
 @Entity
 @Table(name = "platforms")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 public class Platform {
 
     @Id
@@ -26,6 +20,15 @@ public class Platform {
     @OneToMany(mappedBy = "platform", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Question> questions;
 
+    // Required by JPA
+    public Platform() {}
+
+    // Convenience constructor
+    public Platform(String name) {
+        this.name = name;
+    }
+
+    // Getters and Setters (if not using Lombok)
     public Long getId() {
         return id;
     }

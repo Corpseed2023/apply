@@ -1,5 +1,6 @@
 package com.apply.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,7 +18,9 @@ public class UserCredential {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonBackReference
     private User user;
+
 
     @ManyToOne
     @JoinColumn(name = "platform_id", nullable = false)

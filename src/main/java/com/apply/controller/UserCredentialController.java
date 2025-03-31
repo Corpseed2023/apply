@@ -2,8 +2,10 @@ package com.apply.controller;
 
 import com.apply.dto.request.UserCredentialRequest;
 import com.apply.entity.Platform;
+import com.apply.entity.User;
 import com.apply.entity.UserCredential;
 import com.apply.repository.PlatformRepository;
+import com.apply.repository.UserRepository;
 import com.apply.service.UserCredentialService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,20 +30,29 @@ public class UserCredentialController {
     @Autowired
     private PlatformRepository platformRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     // Save a new credential
     @PostMapping("/save")
     public ResponseEntity<UserCredential> saveCredential(@Valid @RequestBody UserCredentialRequest request) {
         Platform platform = platformRepository.findByName(request.getPlatform())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Platform not found"));
 
+        // 🛠️ Load User by ID
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
         UserCredential userCredential = new UserCredential();
         userCredential.setPlatform(platform);
         userCredential.setUsername(request.getUsername());
         userCredential.setPassword(request.getPassword());
+        userCredential.setUser(user); // ✅ REQUIRED!
 
         UserCredential savedCredential = userCredentialService.saveCredential(userCredential);
         return ResponseEntity.ok(savedCredential);
     }
+
 
     // Get credential by platform
     @GetMapping("/platform/{platform}")

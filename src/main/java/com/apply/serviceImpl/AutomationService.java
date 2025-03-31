@@ -1,46 +1,58 @@
 package com.apply.serviceImpl;
 
+import com.apply.entity.Platform;
+import com.apply.entity.User;
 import com.apply.entity.UserCredential;
-import com.apply.repository.UserCredentialRepository;
+import com.apply.repository.PlatformRepository;
+import com.apply.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
 public class AutomationService {
 
     @Autowired
-    private UserCredentialRepository userCredentialRepository;
+    private UserRepository userRepository;
+
+    @Autowired
+    private PlatformRepository platformRepository;
 
     @Autowired
     private NaukriAutomationService naukriAutomationService;
 
-    @Autowired
-    private LinkedInAutomationService linkedInAutomationService;
-
     public void applyForAllUsers() {
-        List<UserCredential> users = userCredentialRepository.findAll();
+        System.out.println("👤 [Automation] Starting job application automation...");
 
-        for (UserCredential user : users) {
-            String platformName = user.getPlatform().getName().toLowerCase();
-            Set<String> keywords = user.getUser().getKeywords(); // Fetch keywords
+        String email = "kaushuthakur610@gmail.com";
 
-            System.out.println("🚀 Applying for user: " + user.getUsername() + " on platform: " + platformName);
-            System.out.println("🔍 Keywords for search: " + keywords);
+        // Get or create user
+        User user = userRepository.findByEmail(email).orElseGet(() -> {
+            User newUser = new User();
+            newUser.setName("Kaushlendra");
+            newUser.setEmail(email);
+            return userRepository.save(newUser);
+        });
 
-            // ✅ Call platform-specific method with keywords
-            switch (platformName) {
-                case "naukri":
-                    naukriAutomationService.applyForNaukri(user, keywords);
-                    break;
-                case "linkedin":
-                    linkedInAutomationService.applyForLinkedIn(user, keywords);
-                    break;
-                default:
-                    System.err.println("❌ Unsupported platform: " + platformName);
-            }
-        }
+        // 🧠 Ensure keywords are always set (even if user was fetched)
+        user.setKeywords(Set.of("Java Developer"));
+
+        System.out.println("📌 Keywords for user: " + user.getKeywords());
+
+        // Get or create platform
+        Platform platform = platformRepository.findByName("Naukri")
+                .orElseGet(() -> platformRepository.save(new Platform("Naukri")));
+
+        // Prepare credentials
+        UserCredential testUser = new UserCredential();
+        testUser.setUsername(email);
+        testUser.setPassword("kaushu610");
+        testUser.setPlatform(platform);
+        testUser.setUser(user);
+
+        // Launch automation
+        naukriAutomationService.applyForNaukri(testUser, user.getKeywords());
     }
 }
